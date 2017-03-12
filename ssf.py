@@ -4,17 +4,32 @@
 import os
 import shutil
 
-#todo: take directory as an argument. import getopt or argparse, sys also has argv
-directory = "C:\\max\\s.review\\now\\mar05"
+#todo: take directory as an argument. import
+#   getopt or argparse, sys also has argv
+directory = "C:\\max\\import\\combined"
 backup = directory + '_bak'
 
-# Create Backup.
-try:
-    shutil.copytree(directory, backup)
-except:
-    # We don't want to proceed if this fails.
-    print('Backup copy failed. Exiting')
-    exit()
+def printStatus(step, action):
+    strMap = {
+        "pre": 'Start: {}...',
+        "post": 'Finished: {}!',
+        "error": 'Failed: {}. Exiting'
+    }
+    print(strMap.get(step, step + 'is unknown: {}').format(action))
+
+def makeBackup():
+    action='creating backup'
+
+    printStatus('pre', action)
+    try:
+        shutil.copytree(directory, backup)
+    except:
+        printStatus('errors', action)
+        # We don't want to proceed if this fails.
+        raise
+    printStatus('post', action)
+
+makeBackup()
 
 #todo: if file timestamps are different then create date subdirectories and move files accordingly
 
@@ -46,5 +61,5 @@ for root, dirs, files in os.walk(directory + '_bak'):
     count -= len(files)
     for file in files:
         size -= os.path.getsize(os.path.join(root, file))
-print(count)
-print(size)
+if (count == 0) and (size==0):
+    exit()
