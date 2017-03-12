@@ -7,8 +7,14 @@ import shutil
 #todo: take directory as an argument. import
 #   getopt or argparse, sys also has argv
 directory = "C:\\max\\import\\combined"
-backup = directory + '_bak'
 
+backup = directory + '_bak'
+images = [ ".jpg", ".png" ]
+videos = [ ".mp4", ".webm", ".mov" ]
+
+# HELPERS
+
+#todo: use for each major stage
 def printStatus(step, action):
     strMap = {
         "pre": 'Start: {}...',
@@ -16,6 +22,23 @@ def printStatus(step, action):
         "error": 'Failed: {}. Exiting'
     }
     print(strMap.get(step, step + 'is unknown: {}').format(action))
+
+def hasEnding(fileName, extensions):
+    for ext in extensions:
+        if (fileName.endswith(ext)):
+            return True
+    return False
+
+def moveFile(baseDir, subDirectory, fileName):
+    # If needed, create directory.
+    try:
+        os.makedirs(os.path.join(baseDir, subDirectory))
+    except:
+        pass
+    # Move File
+    shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
+
+# WORK
 
 def makeBackup():
     action='creating backup'
@@ -29,25 +52,24 @@ def makeBackup():
         raise
     printStatus('post', action)
 
+#todo: conditionalize this so we only move files when the types are different
+def directoryByType():
+    for file in os.listdir(directory):
+        if hasEnding(file, images):
+            moveFile(directory, "imgs", file)
+        elif hasEnding(file, videos):
+            moveFile(directory, "vids", file)
+
+# EXECUTION
+
 makeBackup()
 
 #todo: if file timestamps are different then create date subdirectories and move files accordingly
+#directoryByDate()
 
-#todo: conditionalize this so we only move files when the types are different
-for file in os.listdir(directory):
-    if file.endswith(".jpg") | file.endswith(".png"):
-        try:
-            os.makedirs(os.path.join(directory, 'imgs'))
-        except:
-            pass
-        shutil.move(os.path.join(directory, file), os.path.join(directory, 'imgs', file))
-    elif file.endswith(".mp4") | file.endswith(".webm") | file.endswith(".mov"):
-        try:
-            os.makedirs(os.path.join(directory, 'vids'))
-        except:
-            pass
-        shutil.move(os.path.join(directory, file), os.path.join(directory, 'vids', file))
+directoryByType()
 
+#todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
 #       if so, cleanup backup
 #       if not, display error message
@@ -61,5 +83,6 @@ for root, dirs, files in os.walk(directory + '_bak'):
     count -= len(files)
     for file in files:
         size -= os.path.getsize(os.path.join(root, file))
-if (count == 0) and (size==0):
+if (count == 0) and (size == 0):
+    #todo: delete backup
     exit()
