@@ -2,6 +2,7 @@
 #!/usr/bin/python
 
 import os
+import time
 import shutil
 
 #todo: take directory as an argument. import
@@ -38,6 +39,18 @@ def moveFile(baseDir, subDirectory, fileName):
     # Move File
     shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
 
+def getDate(fileName):
+    parts = fileName.replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
+    for p in parts:
+        try:
+            date = time.strptime(p, "%Y%m%d")
+        except:
+            continue
+        formatted = time.strftime("%Y%b%d", date)
+        return formatted
+    # todo: try "date taken" from media file meta data
+    return ""
+
 # WORK
 
 def makeBackup():
@@ -52,7 +65,14 @@ def makeBackup():
         raise
     printStatus('post', action)
 
-#todo: conditionalize this so we only move files when the types are different
+# todo: conditionalize when the dates are different, recurse to subdirs
+def directoryByDate():
+    for file in os.listdir(directory):
+        date = getDate(file)
+        if (date != ""):
+            moveFile(directory, date, file)
+
+#todo: conditionalize when the types are different, recurse to subdirs
 def directoryByType():
     for file in os.listdir(directory):
         if hasEnding(file, images):
@@ -64,10 +84,10 @@ def directoryByType():
 
 makeBackup()
 
-#todo: if file timestamps are different then create date subdirectories and move files accordingly
-#directoryByDate()
+directoryByDate()
 
-directoryByType()
+#todo: reactivate after above todos
+#directoryByType()
 
 #todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
