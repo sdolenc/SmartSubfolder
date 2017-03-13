@@ -13,6 +13,18 @@ backup = directory + '_bak'
 images = [ ".jpg", ".png" ]
 videos = [ ".mp4", ".webm", ".mov" ]
 
+# CLASSES
+
+class Directories:
+    'Base Directory and list of pending subfolders'
+    baseDirectory = ''
+    subFolders = [] # Subdirectory object
+
+class Subdirectory:
+    'Folder and list of pending files'
+    folderName = ''
+    files = [] # fileName strings
+
 # HELPERS
 
 #todo: use for each major stage
