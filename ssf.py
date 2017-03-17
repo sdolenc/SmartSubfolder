@@ -19,8 +19,6 @@ videos = [ ".mp4", ".webm", ".mov" ]
 
 # CLASSES
 
-#todo:init,adds
-#todo:drain
 class Directories:
     'Tracking potential file moves'
     baseDirectory = ''
@@ -125,6 +123,9 @@ def directoryByType():
 makeBackup()
 
 directoryByDate()
+
+for root, dirs, files in os.walk(directory):
+    
 
 #todo: reactivate after above todos
 #directoryByType()
