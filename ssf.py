@@ -22,9 +22,9 @@ videos = [ ".mp4", ".webm", ".mov" ]
 #todo:init,adds
 #todo:drain
 class Directories:
-    'Base Directory and collection of pending subDirToFiles'
+    'Tracking potential file moves'
     baseDirectory = ''
-    subDirToFiles = dict() # key: Subdirectory, value: files
+    subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def __init__(self, basePath):
         self.baseDirectory = basePath
@@ -40,7 +40,9 @@ class Directories:
     def moveFiles(self):
         # Only move files if there are going to be two ore more subdirectories
         if (len(self.subDirToFiles) > 1):
+            # iterate over dictionary. key=subFolder, value=files
             for subFolder, files in self.subDirToFiles.items():
+                # iterate over file list.
                 for file in files:
                     moveFile(self.baseDirectory, subFolder, file)
 
@@ -66,6 +68,7 @@ def moveFile(baseDir, subDirectory, fileName):
     try:
         os.makedirs(os.path.join(baseDir, subDirectory))
     except:
+        #raise
         pass
     # Move File
     shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
