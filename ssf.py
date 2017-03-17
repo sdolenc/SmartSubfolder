@@ -2,12 +2,16 @@
 #!/usr/bin/python
 
 import os
+import sys
 import time
 import shutil
 
-#todo: take directory as an argument. import
-#   getopt or argparse, sys also has argv
-directory = "C:\\max\\import\\combined"
+# take directory as an argument.
+# future: use getopt or argparse
+if (len(sys.argv) != 2):
+    exit(3)
+directory = sys.argv[1] # "C:\\max\\import\\combined"
+#todo: verify a) exists b) directory and c) doesn't end w/ slash
 
 backup = directory + '_bak'
 images = [ ".jpg", ".png" ]
@@ -15,15 +19,32 @@ videos = [ ".mp4", ".webm", ".mov" ]
 
 # CLASSES
 
+#todo:init,adds
+#todo:drain
 class Directories:
-    'Base Directory and list of pending subfolders'
+    'Tracking potential file moves'
     baseDirectory = ''
-    subFolders = [] # Subdirectory object
+    subDirToFiles = dict() # keys: Subdirectory, values: files
 
-class Subdirectory:
-    'Folder and list of pending files'
-    folderName = ''
-    files = [] # fileName strings
+    def __init__(self, basePath):
+        self.baseDirectory = basePath
+
+    def addFile(self, folder, file):
+        # Ensure Folder Exists
+        if (self.subDirToFiles.get(folder) == None):
+            self.subDirToFiles[folder] = list()
+
+        # Add file
+        self.subDirToFiles[folder].append(file)
+
+    def moveFiles(self):
+        # Only move files if there are going to be two ore more subdirectories
+        if (len(self.subDirToFiles) > 1):
+            # iterate over dictionary. key=subFolder, value=files
+            for subFolder, files in self.subDirToFiles.items():
+                # iterate over file list.
+                for file in files:
+                    moveFile(self.baseDirectory, subFolder, file)
 
 # HELPERS
 
@@ -47,6 +68,7 @@ def moveFile(baseDir, subDirectory, fileName):
     try:
         os.makedirs(os.path.join(baseDir, subDirectory))
     except:
+        #raise
         pass
     # Move File
     shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
@@ -74,23 +96,29 @@ def makeBackup():
     except:
         printStatus('errors', action)
         # We don't want to proceed if this fails.
-        raise
+        #raise
+        pass
     printStatus('post', action)
 
 # todo: conditionalize when the dates are different, recurse to subdirs
 def directoryByDate():
+    pendingDateMoves = Directories(directory)
     for file in os.listdir(directory):
         date = getDate(file)
-        if (date != ""):
-            moveFile(directory, date, file)
+        if (date != ""): #todo: unknownDate folder
+            pendingDateMoves.addFile(date, file)
+    pendingDateMoves.moveFiles()
 
 #todo: conditionalize when the types are different, recurse to subdirs
 def directoryByType():
+    pendingTypeMoves = Directories(directory)
     for file in os.listdir(directory):
+        #todo: can this return subDirToFiles? if so, conditionalize to files
         if hasEnding(file, images):
-            moveFile(directory, "imgs", file)
+            pendingTypeMoves.addFile("imgs", file)
         elif hasEnding(file, videos):
-            moveFile(directory, "vids", file)
+            pendingTypeMoves.addFile("vids", file)
+    pendingTypeMoves.moveFiles()
 
 # EXECUTION
 
