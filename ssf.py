@@ -22,50 +22,27 @@ videos = [ ".mp4", ".webm", ".mov" ]
 #todo:init,adds
 #todo:drain
 class Directories:
-    'Base Directory and collection of pending subfolders'
+    'Base Directory and collection of pending subDirToFiles'
     baseDirectory = ''
-    subFolders = dict() # Subdirectory object
+    subDirToFiles = dict() # key: Subdirectory, value: files
 
     def __init__(self, basePath):
         self.baseDirectory = basePath
 
     def addFile(self, folder, file):
         # Ensure Folder Exists
-        if (self.subFolders.get(folder) == None):
-            subDir = Subdirectory(folder, file)
-            self.subFolders[folder] = subDir
-        else:
-            # Add file
-            self.subFolders[folder].files.append(file)
+        if (self.subDirToFiles.get(folder) == None):
+            self.subDirToFiles[folder] = list()
+
+        # Add file
+        self.subDirToFiles[folder].append(file)
 
     def moveFiles(self):
-        #print(self.subFolders["imgs"].files)
-        #print(self.subFolders["vids"].files)
-        print(self.subFolders)
-        for a in self.subFolders:
-            print(a)
-            print()
-        print(self.subFolders.items())
-        for b in self.subFolders.items():
-            print(b)
-            print()
-        exit()
-        print(self.subFolders.values)
-        if (len(self.subFolders) > 1):
-            for sf, value in self.subFolders.items():
-                print(str(sf))
-                for f in sf.files:
-                    moveFile(self.baseDirectory, sf.folderName, f)
-
-#todo: consider making class act like a dictionary
-class Subdirectory:
-    'Folder and list of pending files'
-    folderName = ''
-    files = [] # fileName strings
-
-    def __init__(self, folder, file):
-        #self.folderName = folder
-        self.files.append(file)
+        # Only move files if there are going to be two ore more subdirectories
+        if (len(self.subDirToFiles) > 1):
+            for subFolder, files in self.subDirToFiles.items():
+                for file in files:
+                    moveFile(self.baseDirectory, subFolder, file)
 
 # HELPERS
 
@@ -122,32 +99,32 @@ def makeBackup():
 
 # todo: conditionalize when the dates are different, recurse to subdirs
 def directoryByDate():
+    pendingDateMoves = Directories(directory)
     for file in os.listdir(directory):
         date = getDate(file)
-        if (date != ""):
-            moveFile(directory, date, file)
+        if (date != ""): #todo: unknownDate folder
+            pendingDateMoves.addFile(date, file)
+    pendingDateMoves.moveFiles()
 
 #todo: conditionalize when the types are different, recurse to subdirs
 def directoryByType():
-    pendingMoves = Directories(directory)
+    pendingTypeMoves = Directories(directory)
     for file in os.listdir(directory):
-        #todo: can this return subfolders? if so, conditionalize to files
+        #todo: can this return subDirToFiles? if so, conditionalize to files
         if hasEnding(file, images):
-            #moveFile(directory, "imgs", file)
-            pendingMoves.addFile("imgs", file)
+            pendingTypeMoves.addFile("imgs", file)
         elif hasEnding(file, videos):
-            #moveFile(directory, "vids", file)
-            pendingMoves.addFile("vids", file)
-    pendingMoves.moveFiles()
+            pendingTypeMoves.addFile("vids", file)
+    pendingTypeMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
 
-#directoryByDate()
+directoryByDate()
 
 #todo: reactivate after above todos
-directoryByType()
+#directoryByType()
 
 #todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
