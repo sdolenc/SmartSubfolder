@@ -53,7 +53,7 @@ def printStatus(step, action):
         "post": 'Finished: {}!',
         "error": 'Failed: {}. Exiting'
     }
-    print(strMap.get(step, step + 'is unknown: {}').format(action))
+    print(strMap.get(step, step + ' is not a member of printStatus. Encountered during: {}').format(action))
 
 def hasEnding(fileName, extensions):
     for ext in extensions:
@@ -80,8 +80,16 @@ def getDate(fileName):
             continue
         formatted = time.strftime("%Y%b%d", date)
         return formatted
-    # todo: try "date taken" from media file meta data
-    return ""
+    # todo: get "date taken" from file meta data
+    return "unknownDate"
+
+def getType(filename):
+    if hasEnding(filename, images):
+        return "imgs"
+    elif hasEnding(filename, videos):
+        return "vids"
+    else:
+        return "unknownType"
 
 # WORK
 
@@ -92,7 +100,7 @@ def makeBackup():
     try:
         shutil.copytree(directory, backup)
     except:
-        printStatus('errors', action)
+        printStatus('error', action)
         # We don't want to proceed if this fails.
         #raise
         pass
@@ -102,33 +110,33 @@ def makeBackup():
 def directoryByDate():
     pendingDateMoves = Directories(directory)
     for file in os.listdir(directory):
+        #todo: can python take a functionName as a param? if os, we can consolidate these functions.
         date = getDate(file)
-        if (date != ""): #todo: unknownDate folder
-            pendingDateMoves.addFile(date, file)
+        pendingDateMoves.addFile(date, file)
     pendingDateMoves.moveFiles()
 
 #todo: conditionalize when the types are different, recurse to subdirs
 def directoryByType():
     pendingTypeMoves = Directories(directory)
     for file in os.listdir(directory):
-        #todo: can this return subDirToFiles? if so, conditionalize to files
-        if hasEnding(file, images):
-            pendingTypeMoves.addFile("imgs", file)
-        elif hasEnding(file, videos):
-            pendingTypeMoves.addFile("vids", file)
+        #todo: can python take a functionName as a param? if os, we can consolidate these functions.
+        fileType = getType(file)
+        pendingTypeMoves.addFile(fileType, file)
     pendingTypeMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
 
-directoryByDate()
+#directoryByDate()
 
-for root, dirs, files in os.walk(directory):
-    
+for newRoot, subDirs, files in os.walk(directory):
+    print(newRoot)
+    print(files)
+    print()
 
 #todo: reactivate after above todos
-#directoryByType()
+directoryByType()
 
 #todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
