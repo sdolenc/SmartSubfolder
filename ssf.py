@@ -21,11 +21,10 @@ videos = [ ".mp4", ".webm", ".mov" ]
 
 class Directories:
     'Tracking potential file moves'
-    baseDirectory = ''
-    subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def __init__(self, basePath):
         self.baseDirectory = basePath
+        self.subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def addFile(self, folder, file):
         # Ensure Folder Exists
@@ -69,7 +68,7 @@ def moveFile(baseDir, subDirectory, fileName):
         #raise
         pass
     # Move File
-    shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
+    shutil.move(os.path.join(baseDir, fileName), os.path.join(baseDir, subDirectory, fileName))
 
 def getDate(fileName):
     parts = fileName.replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
@@ -108,27 +107,19 @@ def makeBackup():
 
 # todo: conditionalize when the dates are different, recurse to subdirs
 def moveFilesToSubDirs(getSubFolderFn):
-    pendingDateMoves = Directories(directory)
-    for file in os.listdir(directory):
-        subDir = getSubFolderFn(file)
-        pendingDateMoves.addFile(subDir, file)
-    pendingDateMoves.moveFiles()
+    for newRoot, subDirs, files in os.walk(directory):
+        pendingMoves = Directories(newRoot)
+        for file in files:
+            subDir = getSubFolderFn(file)
+            pendingMoves.addFile(subDir, file)
+        pendingMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
-
-#moveFilesToSubDirs(getDate)
-
-#for newRoot, subDirs, files in os.walk(directory):
-  #  print(newRoot)
-   # print(files)
-    #print()
-
-#todo: reactivate after above todos
+moveFilesToSubDirs(getDate)
 moveFilesToSubDirs(getType)
 
-#todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
 #       if so, cleanup backup
 #       if not, display error message
