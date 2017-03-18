@@ -107,36 +107,26 @@ def makeBackup():
     printStatus('post', action)
 
 # todo: conditionalize when the dates are different, recurse to subdirs
-def directoryByDate():
+def moveFilesToSubDirs(getSubFolderFn):
     pendingDateMoves = Directories(directory)
     for file in os.listdir(directory):
-        #todo: can python take a functionName as a param? if os, we can consolidate these functions.
-        date = getDate(file)
-        pendingDateMoves.addFile(date, file)
+        subDir = getSubFolderFn(file)
+        pendingDateMoves.addFile(subDir, file)
     pendingDateMoves.moveFiles()
-
-#todo: conditionalize when the types are different, recurse to subdirs
-def directoryByType():
-    pendingTypeMoves = Directories(directory)
-    for file in os.listdir(directory):
-        #todo: can python take a functionName as a param? if os, we can consolidate these functions.
-        fileType = getType(file)
-        pendingTypeMoves.addFile(fileType, file)
-    pendingTypeMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
 
-#directoryByDate()
+#moveFilesToSubDirs(getDate)
 
-for newRoot, subDirs, files in os.walk(directory):
-    print(newRoot)
-    print(files)
-    print()
+#for newRoot, subDirs, files in os.walk(directory):
+  #  print(newRoot)
+   # print(files)
+    #print()
 
 #todo: reactivate after above todos
-directoryByType()
+moveFilesToSubDirs(getType)
 
 #todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
