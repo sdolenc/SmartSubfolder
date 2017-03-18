@@ -19,15 +19,12 @@ videos = [ ".mp4", ".webm", ".mov" ]
 
 # CLASSES
 
-#todo:init,adds
-#todo:drain
 class Directories:
     'Tracking potential file moves'
-    baseDirectory = ''
-    subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def __init__(self, basePath):
         self.baseDirectory = basePath
+        self.subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def addFile(self, folder, file):
         # Ensure Folder Exists
@@ -55,7 +52,7 @@ def printStatus(step, action):
         "post": 'Finished: {}!',
         "error": 'Failed: {}. Exiting'
     }
-    print(strMap.get(step, step + 'is unknown: {}').format(action))
+    print(strMap.get(step, step + ' is not a member of printStatus. Encountered during: {}').format(action))
 
 def hasEnding(fileName, extensions):
     for ext in extensions:
@@ -71,7 +68,7 @@ def moveFile(baseDir, subDirectory, fileName):
         #raise
         pass
     # Move File
-    shutil.move(os.path.join(directory, fileName), os.path.join(directory, subDirectory, fileName))
+    shutil.move(os.path.join(baseDir, fileName), os.path.join(baseDir, subDirectory, fileName))
 
 def getDate(fileName):
     parts = fileName.replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
@@ -82,8 +79,16 @@ def getDate(fileName):
             continue
         formatted = time.strftime("%Y%b%d", date)
         return formatted
-    # todo: try "date taken" from media file meta data
-    return ""
+    # todo: get "date taken" from file meta data
+    return "unknownDate"
+
+def getType(filename):
+    if hasEnding(filename, images):
+        return "imgs"
+    elif hasEnding(filename, videos):
+        return "vids"
+    else:
+        return "unknownType"
 
 # WORK
 
@@ -94,42 +99,27 @@ def makeBackup():
     try:
         shutil.copytree(directory, backup)
     except:
-        printStatus('errors', action)
+        printStatus('error', action)
         # We don't want to proceed if this fails.
         #raise
         pass
     printStatus('post', action)
 
 # todo: conditionalize when the dates are different, recurse to subdirs
-def directoryByDate():
-    pendingDateMoves = Directories(directory)
-    for file in os.listdir(directory):
-        date = getDate(file)
-        if (date != ""): #todo: unknownDate folder
-            pendingDateMoves.addFile(date, file)
-    pendingDateMoves.moveFiles()
-
-#todo: conditionalize when the types are different, recurse to subdirs
-def directoryByType():
-    pendingTypeMoves = Directories(directory)
-    for file in os.listdir(directory):
-        #todo: can this return subDirToFiles? if so, conditionalize to files
-        if hasEnding(file, images):
-            pendingTypeMoves.addFile("imgs", file)
-        elif hasEnding(file, videos):
-            pendingTypeMoves.addFile("vids", file)
-    pendingTypeMoves.moveFiles()
+def moveFilesToSubDirs(getSubFolderFn):
+    for newRoot, subDirs, files in os.walk(directory):
+        pendingMoves = Directories(newRoot)
+        for file in files:
+            subDir = getSubFolderFn(file)
+            pendingMoves.addFile(subDir, file)
+        pendingMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
+moveFilesToSubDirs(getDate)
+moveFilesToSubDirs(getType)
 
-directoryByDate()
-
-#todo: reactivate after above todos
-#directoryByType()
-
-#todo: refactor into functions
 #todo: verify file count and total size equals backup after completion
 #       if so, cleanup backup
 #       if not, display error message
