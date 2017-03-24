@@ -13,10 +13,10 @@ if (len(sys.argv) != 2):
     print("Path Expected")
     exit(3)
 directory = sys.argv[1] # "C:\\max\\import\\combined"
-#todo: verify a) exists b) directory and c) doesn't end w/ slash
+#todo: verify a) exists b) directory os.path.isdir and c) doesn't end w/ slash
 
 backup = directory + '_bak'
-images = [ ".jpg", ".png" ]
+images = [ ".jpg", ".webp", ".png" ]
 videos = [ ".mp4", ".webm", ".mov" ]
 
 # CLASSES
@@ -37,8 +37,10 @@ class Directories:
         self.subDirToFiles[folder].append(file)
 
     def moveFiles(self):
-        # Only move files if there are going to be two ore more subdirectories
-        if (len(self.subDirToFiles) > 1):
+        # Only move files if there are going to be two ore more subdirectories.
+        # OR if desired subfolder already exists
+        if (len(self.subDirToFiles) > 1) or \
+            ((len(self.subDirToFiles) == 1) and list(self.subDirToFiles.keys())[0] in next(os.walk(self.baseDirectory))[1]):
             # iterate over dictionary. key=subFolder, value=files
             for subFolder, files in self.subDirToFiles.items():
                 # iterate over file list.
@@ -58,7 +60,7 @@ def printStatus(step, action):
 
 def hasEnding(fileName, extensions):
     for ext in extensions:
-        if (fileName.endswith(ext)):
+        if (fileName.lower().endswith(ext)):
             return True
     return False
 
