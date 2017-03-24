@@ -5,10 +5,12 @@ import os
 import sys
 import time
 import shutil
+import exifread
 
 # take directory as an argument.
 # future: use getopt or argparse
 if (len(sys.argv) != 2):
+    print("Path Expected")
     exit(3)
 directory = sys.argv[1] # "C:\\max\\import\\combined"
 #todo: verify a) exists b) directory and c) doesn't end w/ slash
@@ -70,19 +72,40 @@ def moveFile(baseDir, subDirectory, fileName):
     # Move File
     shutil.move(os.path.join(baseDir, fileName), os.path.join(baseDir, subDirectory, fileName))
 
-def getDate(fileName):
-    parts = fileName.replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
+def getDateFromString(toParse):
+    # Normalize and split.
+    parts = toParse.replace(':', '').replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
     for p in parts:
         try:
             date = time.strptime(p, "%Y%m%d")
+            return date
         except:
             continue
-        formatted = time.strftime("%Y%b%d", date)
-        return formatted
-    # todo: get "date taken" from file meta data
+    return None
+
+def getDateFromMetaData(filePath):
+    f = open(filePath, 'rb')
+    tags = exifread.process_file(f)
+
+    date = None
+    if ("EXIF DateTimeOriginal" in tags):
+        date = getDateFromString(str(tags["EXIF DateTimeOriginal"]))
+    elif ("EXIF DateTimeDigitized" in tags):
+        date = getDateFromString(str(tags["EXIF DateTimeDigitized"]))
+    return date
+
+def getFormattedDate(fileName, path):
+    date = getDateFromString(fileName)
+
+    if (date == None):
+        date = getDateFromMetaData(os.path.join(path, fileName))
+
+    if (date != None):
+        return time.strftime("%Y%b%d", date)
+
     return "unknownDate"
 
-def getType(filename):
+def getType(filename, path = ""):
     if hasEnding(filename, images):
         return "imgs"
     elif hasEnding(filename, videos):
@@ -100,24 +123,24 @@ def makeBackup():
         shutil.copytree(directory, backup)
     except:
         printStatus('error', action)
-        # We don't want to proceed if this fails.
         #raise
         pass
     printStatus('post', action)
 
-# todo: conditionalize when the dates are different, recurse to subdirs
 def moveFilesToSubDirs(getSubFolderFn):
     for newRoot, subDirs, files in os.walk(directory):
         pendingMoves = Directories(newRoot)
         for file in files:
-            subDir = getSubFolderFn(file)
+            subDir = getSubFolderFn(file, newRoot)
+            # Build record of potential moves
             pendingMoves.addFile(subDir, file)
+        # Trigger the file moves.
         pendingMoves.moveFiles()
 
 # EXECUTION
 
 makeBackup()
-moveFilesToSubDirs(getDate)
+moveFilesToSubDirs(getFormattedDate)
 moveFilesToSubDirs(getType)
 
 #todo: verify file count and total size equals backup after completion
