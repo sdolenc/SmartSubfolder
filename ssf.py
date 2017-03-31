@@ -72,6 +72,8 @@ def moveFile(baseDir, subDirectory, fileName):
         #raise
         pass
     # Move File
+    # todo: this will overwrite fies with the same name. allow if filesize is equal and rename if not.
+    # todo: overwrites will throw off the accounting later on. consider factoring that in.
     shutil.move(os.path.join(baseDir, fileName), os.path.join(baseDir, subDirectory, fileName))
 
 def getDateFromString(toParse):
@@ -147,7 +149,9 @@ moveFilesToSubDirs(getType)
 
 #todo: verify file count and total size equals backup after completion
 #       if so, cleanup backup
-#       if not, display error message
+#       if not, display error message AND
+#           todo: create lists of both directories
+#           (2 csv fies w/ columns: filenames,size)
 count = 0
 size = 0
 for root, dirs, files in os.walk(directory):
