@@ -42,6 +42,10 @@ class Directories:
         self.subDirToFiles = dict() # keys: Subdirectory, values: files
 
     def addFile(self, folder, file):
+        # Optional conditional that prevents double nesting.
+        #if (folder in self.baseDirectory):
+            #return
+
         # Ensure Folder Exists
         if (self.subDirToFiles.get(folder) == None):
             self.subDirToFiles[folder] = list()
