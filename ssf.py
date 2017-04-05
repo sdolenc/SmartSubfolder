@@ -13,11 +13,24 @@ if (len(sys.argv) != 2):
     print("Path Expected")
     exit(3)
 directory = sys.argv[1] # "C:\\max\\import\\combined"
-#todo: verify a) exists b) directory os.path.isdir and c) doesn't end w/ slash
+
+# Shouldn't end with a slash. If it does, then concatenating
+# _bak will create a subfolder instead of a sister folder.
+while directory.endswith('/') or directory.endswith('\\'):
+    directory = directory.rstrip('/')
+    directory = directory.rstrip('\\')
+
+if (not os.path.isdir(directory)):
+    print("Path {} is not a path".format(directory))
+    exit(5)
+
+#todo: require 3x folderSize < totalFree space on disk. 
+#total, used, free = shutil.disk_usage(backup)
+#print("backup free {}".format(free))
 
 backup = directory + '_bak'
 images = [ ".jpg", ".webp", ".png" ]
-videos = [ ".mp4", ".webm", ".mov" ]
+videos = [ ".mp4", ".webm", ".mov", "3gp", "gif" ]
 
 # CLASSES
 
@@ -72,7 +85,7 @@ def moveFile(baseDir, subDirectory, fileName):
         #raise
         pass
     # Move File
-    # todo: this will overwrite fies with the same name. allow if filesize is equal and rename if not.
+    # todo: this will overwrite files with the same name. allow if filesize is equal and rename if not.
     # todo: overwrites will throw off the accounting later on. consider factoring that in.
     shutil.move(os.path.join(baseDir, fileName), os.path.join(baseDir, subDirectory, fileName))
 
@@ -127,8 +140,8 @@ def makeBackup():
         shutil.copytree(directory, backup)
     except:
         printStatus('error', action)
-        #raise
-        pass
+        raise
+        #pass
     printStatus('post', action)
 
 def moveFilesToSubDirs(getSubFolderFn):
@@ -147,6 +160,7 @@ makeBackup()
 moveFilesToSubDirs(getFormattedDate)
 moveFilesToSubDirs(getType)
 
+#todo: replace calculation w/ disk_usage
 #todo: verify file count and total size equals backup after completion
 #       if so, cleanup backup
 #       if not, display error message AND
@@ -154,14 +168,18 @@ moveFilesToSubDirs(getType)
 #           (2 csv fies w/ columns: filenames,size)
 count = 0
 size = 0
+count2 = 0
+size2 = 0
 for root, dirs, files in os.walk(directory):
     count += len(files)
     for file in files:
         size += os.path.getsize(os.path.join(root, file))
-for root, dirs, files in os.walk(directory + '_bak'):
-    count -= len(files)
+print("transformed fileCount {}".format(count))
+print("transformed diskSpace {}".format(size))
+
+for root, dirs, files in os.walk(backup):
+    count2 += len(files)
     for file in files:
-        size -= os.path.getsize(os.path.join(root, file))
-if (count == 0) and (size == 0):
-    #todo: delete backup
-    exit()
+        size2 += os.path.getsize(os.path.join(root, file))
+print("backup fileCount {}".format(count2))
+print("backup diskSpace {}".format(size2))
