@@ -7,7 +7,7 @@ import time
 import shutil
 import exifread
 
-# take directory as an argument.
+# Expects directory as an argument.
 # future: use getopt or argparse
 if (len(sys.argv) != 2):
     print("Path Expected")
@@ -21,7 +21,7 @@ while directory.endswith('/') or directory.endswith('\\'):
     directory = directory.rstrip('\\')
 
 if (not os.path.isdir(directory)):
-    print("Path {} is not a path".format(directory))
+    print("Path {} is not a directory".format(directory))
     exit(5)
 
 #todo: require 3x folderSize < totalFree space on disk. 
