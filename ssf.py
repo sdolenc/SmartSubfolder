@@ -12,7 +12,7 @@ import exifread
 if (len(sys.argv) != 2):
     print("Path Expected")
     exit(3)
-directory = sys.argv[1] # "C:\\max\\import\\combined"
+directory = sys.argv[1] # "C:\\max\\import\\erdo"
 
 # Shouldn't end with a slash. If it does, then concatenating
 # _bak will create a subfolder instead of a sister folder.
@@ -97,10 +97,20 @@ def getDateFromString(toParse):
     # Normalize and split.
     parts = toParse.replace(':', '').replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
     for p in parts:
+        #todo: refactor
         try:
             date = time.strptime(p, "%Y%m%d")
+            if (date.tm_year < 1900):
+                raise
             return date
         except:
+            try:
+                date = time.strptime(p, "%d%m%y")
+                if (date.tm_year < 1900):
+                    raise
+                return date
+            except:
+                continue
             continue
     return None
 
