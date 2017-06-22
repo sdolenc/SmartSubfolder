@@ -126,10 +126,10 @@ def getDateFromMetaData(filePath):
     return date
 
 def getFormattedDate(fileName, path):
-    date = getDateFromString(fileName)
+    date = getDateFromMetaData(os.path.join(path, fileName))
 
     if (date == None):
-        date = getDateFromMetaData(os.path.join(path, fileName))
+        date = getDateFromString(fileName)
 
     if (date != None):
         return time.strftime("%Y%b%d", date)
