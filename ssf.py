@@ -29,7 +29,7 @@ if (not os.path.isdir(directory)):
 #print("backup free {}".format(free))
 
 backup = directory + '_bak'
-images = [ ".jpg", ".webp", ".png" ]
+images = [ ".jpg", ".webp", ".png", ".jpeg" ]
 videos = [ ".mp4", ".webm", ".mov", "3gp", "gif" ]
 
 # CLASSES
