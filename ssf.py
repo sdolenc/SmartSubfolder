@@ -30,7 +30,7 @@ if (not os.path.isdir(directory)):
 
 backup = directory + '_bak'
 images = [ ".jpg", ".webp", ".png", ".jpeg" ]
-videos = [ ".mp4", ".webm", ".mov", "3gp", "gif" ]
+videos = [ ".mp4", ".webm", ".mov", ".3gp", ".gif", ".m4v" ]
 
 # CLASSES
 
@@ -100,17 +100,19 @@ def getDateFromString(toParse):
         #todo: refactor
         try:
             date = time.strptime(p, "%Y%m%d")
-            if (date.tm_year < 1900):
+            if (date.tm_year < 1988):
                 raise
             return date
         except:
-            try:
-                date = time.strptime(p, "%d%m%y")
-                if (date.tm_year < 1900):
-                    raise
-                return date
-            except:
-                continue
+            if len(parts) != 3:
+                # img_4280.jpg
+                try:
+                    date = time.strptime(p, "%d%m%y")
+                    if (date.tm_year < 1988):
+                        raise
+                    return date
+                except:
+                    continue
             continue
     return None
 
