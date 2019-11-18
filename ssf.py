@@ -98,6 +98,7 @@ def getDateFromString(toParse):
     parts = toParse.replace(':', '').replace("-", '.').replace("_", '.').replace(" ", '.').split(".")
     for p in parts:
         #todo: refactor
+        #todo: images shouldn't be in the future (less than today plus one week)
         try:
             date = time.strptime(p, "%Y%m%d")
             if (date.tm_year < 1999):
