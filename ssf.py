@@ -29,7 +29,7 @@ if (not os.path.isdir(directory)):
 #print("backup free {}".format(free))
 
 backup = directory + '_bak'
-images = [ ".jpg", ".webp", ".png", ".jpeg" ]
+images = [ ".jpg", ".webp", ".png", ".jpeg", ".heic" ]
 videos = [ ".mp4", ".webm", ".mov", ".3gp", ".gif", ".m4v" ]
 
 # CLASSES
@@ -100,7 +100,7 @@ def getDateFromString(toParse):
         #todo: refactor
         try:
             date = time.strptime(p, "%Y%m%d")
-            if (date.tm_year < 1988):
+            if (date.tm_year < 1999):
                 raise
             return date
         except:
@@ -108,7 +108,7 @@ def getDateFromString(toParse):
                 # img_4280.jpg
                 try:
                     date = time.strptime(p, "%d%m%y")
-                    if (date.tm_year < 1988):
+                    if (date.tm_year < 1999):
                         raise
                     return date
                 except:
@@ -134,7 +134,7 @@ def getFormattedDate(fileName, path):
         date = getDateFromString(fileName)
 
     if (date != None):
-        return time.strftime("%Y%b%d", date)
+        return time.strftime("%Y-%m-%d", date)
 
     return "unknownDate"
 
